@@ -1,11 +1,29 @@
 import streamlit as st
+from translations import CEVIRI, DIL_ISIMLERI, RTL_DILLER
 
-st.set_page_config(page_title="GuideMatch Test", page_icon="🧭")
+st.set_page_config(page_title="GuideMatch", page_icon="🧭")
 
-st.title("🧭 GuideMatch — Test Sayfası")
-st.caption("Bu sadece deneme. Rehberlere tıklayınca detay açılır.")
+# --- Dil seçimi ---
+if "dil" not in st.session_state:
+    st.session_state.dil = "tr"
 
-# --- 2 sahte rehber ---
+dil = st.sidebar.selectbox(
+    "🌐 " + CEVIRI[st.session_state.dil]["secilen_dil"],
+    list(DIL_ISIMLERI.keys()),
+    format_func=lambda x: DIL_ISIMLERI[x],
+    index=list(DIL_ISIMLERI.keys()).index(st.session_state.dil),
+)
+st.session_state.dil = dil
+t = CEVIRI[dil]
+
+# RTL desteği (Arapça)
+if dil in RTL_DILLER:
+    st.markdown("<style>.stApp {direction: rtl; text-align: right;}</style>", unsafe_allow_html=True)
+
+st.title(t["baslik"])
+st.caption(t["altbaslik"])
+
+# --- Demo rehberler (şimdilik) ---
 rehber1 = {
     "ad": "Rehber 1 — Ayşe Yılmaz",
     "sehir": "İstanbul",
@@ -17,7 +35,6 @@ rehber1 = {
     "dogrulanmis": True,
     "hakkinda": "10 yıllık deneyim. Ayasofya, Topkapı, Sultanahmet turları.",
 }
-
 rehber2 = {
     "ad": "Rehber 2 — Mehmet Demir",
     "sehir": "Kapadokya",
@@ -29,24 +46,20 @@ rehber2 = {
     "dogrulanmis": True,
     "hakkinda": "Kapadokya'da 8 yıl. Balon, vadi yürüyüşleri, ATV turları.",
 }
-
 rehberler = [rehber1, rehber2]
 
-# --- Liste ---
-st.header("Rehberler")
+st.header(t["rehberler"])
 
 for i, r in enumerate(rehberler):
     with st.container(border=True):
         col1, col2 = st.columns([3, 1])
-
         with col1:
-            rozet = "✅ Doğrulanmış" if r["dogrulanmis"] else "⏳ Bekliyor"
+            rozet = t["dogrulanmis"] if r["dogrulanmis"] else t["bekliyor"]
             st.markdown(f"### {r['ad']} ⭐ {r['puan']} · {rozet}")
             st.write(f"📍 {r['sehir']} · 🗣️ {r['diller']} · 🎯 {r['uzmanlik']}")
-            st.write(f"💰 **{r['fiyat']} ₺/gün**")
-
+            st.write(f"💰 **{r['fiyat']} {t['gunluk']}**")
         with col2:
-            if st.button("Detay Gör", key=f"detay_{i}"):
+            if st.button(t["detay_gor"], key=f"detay_{i}"):
                 st.session_state["secili"] = i
 
 # --- Detay paneli ---
@@ -54,14 +67,13 @@ if "secili" in st.session_state:
     r = rehberler[st.session_state["secili"]]
     st.divider()
     st.header(f"📋 {r['ad']}")
-    st.write(f"**Şehir:** {r['sehir']}")
-    st.write(f"**Diller:** {r['diller']}")
-    st.write(f"**Uzmanlık:** {r['uzmanlik']}")
-    st.write(f"**Fiyat:** {r['fiyat']} ₺/gün")
-    st.write(f"**Puan:** ⭐ {r['puan']}")
-    st.write(f"**Telefon:** {r['telefon']}")
-    st.write(f"**Hakkında:** {r['hakkinda']}")
-
-    if st.button("Kapat"):
+    st.write(f"**{t['sehir']}:** {r['sehir']}")
+    st.write(f"**{t['diller']}:** {r['diller']}")
+    st.write(f"**{t['uzmanlik']}:** {r['uzmanlik']}")
+    st.write(f"**{t['fiyat']}:** {r['fiyat']} {t['gunluk']}")
+    st.write(f"**{t['puan']}:** ⭐ {r['puan']}")
+    st.write(f"**{t['telefon']}:** {r['telefon']}")
+    st.write(f"**{t['hakkinda']}:** {r['hakkinda']}")
+    if st.button(t["kapat"]):
         del st.session_state["secili"]
         st.rerun()
